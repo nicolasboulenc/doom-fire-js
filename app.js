@@ -8,6 +8,10 @@ const App = {
 	image_data: null,
 	buffer8: null,
 	buffer32: null,
+	data: null,
+	starting: true,
+	stopping: false,
+	fire_palette_ratio: 3,
 	timer: 0
 };
 
@@ -37,14 +41,9 @@ function setup() {
 	App.buffer32 = new Uint32Array(buffer);
 
 	App.data = new Uint8ClampedArray(App.canvas.width * App.canvas.height);
-	App.starting = false;
+	App.starting = true;
 	App.stopping = false;
 	App.fire_palette_ratio = 3;
-
-	App.pixels_updated = 0;
-	App.data_updated = 0;
-
-	start();
 
 	App.timer = performance.now;
 	requestAnimationFrame(loop);
@@ -54,73 +53,76 @@ function start() {
 
 	App.starting = true;
 	App.stopping = false;
-	
-	// initialize fire array
-	let index = (App.canvas.height - 1) * App.canvas.width;
-	const value = (palette.length * App.fire_palette_ratio) - 1;
-	const palette_index = Math.floor(value / App.fire_palette_ratio);
-	while(index < App.data.length) {
-		App.data[index] = value;
-		App.data_updated++;
-		App.buffer32[index] = palette[palette_index];
-		App.pixels_updated++;
-		index++;
-	}
 }
 
 function stop() {
-
+	App.starting = false;
 	App.stopping = true;
 }
 
 function loop(timestamp) {
 
+	let pixels_updated = 0;
+
 	if(App.stopping === true) {
-		for(let y = App.canvas.height - 1; y > App.canvas.height - 20; y--) {  
+		for(let y = App.canvas.height - 20; y < App.canvas.height; y++) {  
 			for(let x = 0; x < App.canvas.width; x++) {
-				if(App.data[y * App.canvas.height + x] > 0) {
+				if(App.data[y * App.canvas.width + x] > 0) {
 					App.data[y * App.canvas.width + x] -= Math.round(Math.random()) & 3;
-					App.data_updated++;
 				}
 			}
 		}
 	}
 
+	let starting_count = 0;
 	if(App.starting === true) {
-		for(let y = App.canvas.height - 1; y > App.canvas.height - 20; y--) {  
+		for(let y = App.canvas.height - 7; y < App.canvas.height; y++) {  
 			for(let x = 0; x < App.canvas.width; x++) {
 				
-				const index = y * App.canvas.height + x;
-				if( App.data[index] > 0 ) {
-				// if( App.data[index] > 0 && App.data[index] < (palette.length * App.fire_palette_ratio - 1) ) {
+				const index = y * App.canvas.width + x;
+				if( App.data[index] < (palette.length * App.fire_palette_ratio - 1) ) {
 
-					App.data[index] += Math.round(Math.random()) & 1;
-					// App.data[index] = Math.min(App.data[index], palette.length * App.fire_palette_ratio - 1);
-					App.data[index] = App.data[index] % (palette.length * App.fire_palette_ratio - 1);
-					App.data_updated++;
+					App.data[index] += Math.round(Math.random());
+					const palette_index = Math.floor(App.data[index] / App.fire_palette_ratio);
+					App.buffer32[index] = palette[palette_index];
+					// App.image_data.data[index * 4 + 0] = palette[palette_index] & 255;
+					// App.image_data.data[index * 4 + 1] = palette[palette_index] >> 8 & 255;
+					// App.image_data.data[index * 4 + 2] = palette[palette_index] >> 16 & 255;
+					// App.image_data.data[index * 4 + 3] = palette[palette_index] >> 24 & 255;
+					pixels_updated++;
+				}
+				else {
+					starting_count++;
 				}
 			}
 		}
-	}
 
+		if(starting_count > 50 * 7 * App.canvas.width) {
+			App.starting = false;
+			console.log("starting=false");
+		}
+	}
 
     for (let y = 1; y < App.canvas.height; y++) {
         for (let x = 0; x < App.canvas.width; x++) {
 			
 			const src_index = y * App.canvas.width + x;
-			if(App.data[src_index] === 0) continue;
-			
+			if(App.data[src_index] < App.fire_palette_ratio - 1) continue;
+
 			const direction = Math.round(Math.random() * 2) - 1;
 			const dst_index = src_index - App.canvas.width + direction;
 
 			const decay = (Math.random() * 3) & 1;
 			const dst_value = App.data[src_index] - decay;
 			const palette_index = Math.floor(dst_value / App.fire_palette_ratio);
-
+			
 			App.data[dst_index] = dst_value;
-			App.data_updated++;
 			App.buffer32[dst_index] = palette[palette_index];
-			App.pixels_updated++;
+			// App.image_data.data[dst_index * 4 + 0] = palette[palette_index] & 255;
+			// App.image_data.data[dst_index * 4 + 1] = palette[palette_index] >> 8 & 255;
+			// App.image_data.data[dst_index * 4 + 2] = palette[palette_index] >> 16 & 255;
+			// App.image_data.data[dst_index * 4 + 3] = palette[palette_index] >> 24 & 255;
+			pixels_updated++;
         }
     }
 
@@ -128,10 +130,8 @@ function loop(timestamp) {
     App.ctx.putImageData(App.image_data, 0, 0);
 
 	const time = performance.now();
-	const f = "Fps: " + Math.round(1000/(time - App.timer)) + " Pixels: " + App.pixels_updated + " Data: " + App.data_updated;
+	const f = "Fps: " + Math.round(1000/(time - App.timer)) + " Pixels: " + pixels_updated;
 	App.ctx.fillText(f, 1, 20);
 	App.timer = time;
-	App.pixels_updated = 0;
-	App.data_updated = 0;
 	requestAnimationFrame(loop);
 }
