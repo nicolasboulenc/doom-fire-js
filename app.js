@@ -6,7 +6,6 @@ const App = {
 	canvas: null,
 	ctx: null,
 	image_data: null,
-	buffer: null,
 	buffer8: null,
 	buffer32: null,
 	timer: 0
@@ -95,8 +94,9 @@ function loop(timestamp) {
 				if( App.data[index] > 0 ) {
 				// if( App.data[index] > 0 && App.data[index] < (palette.length * App.fire_palette_ratio - 1) ) {
 
-					App.data[index] += Math.round(Math.random()) & 3;
-					App.data[y * App.canvas.width + x] = App.data[y * App.canvas.width + x] % (palette.length * App.fire_palette_ratio - 1);
+					App.data[index] += Math.round(Math.random()) & 1;
+					// App.data[index] = Math.min(App.data[index], palette.length * App.fire_palette_ratio - 1);
+					App.data[index] = App.data[index] % (palette.length * App.fire_palette_ratio - 1);
 					App.data_updated++;
 				}
 			}
@@ -128,7 +128,7 @@ function loop(timestamp) {
     App.ctx.putImageData(App.image_data, 0, 0);
 
 	const time = performance.now();
-	const f = Math.round(1000/(time - App.timer)) + " " + App.pixels_updated + " " + App.data_updated;
+	const f = "Fps: " + Math.round(1000/(time - App.timer)) + " Pixels: " + App.pixels_updated + " Data: " + App.data_updated;
 	App.ctx.fillText(f, 1, 20);
 	App.timer = time;
 	App.pixels_updated = 0;
