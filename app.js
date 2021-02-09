@@ -43,8 +43,9 @@ function setup() {
 	App.ctx.fillStyle = "rgb(192, 192, 192)";
 	App.ctx.font = "12px Lucida Console";
 	App.image_data = App.ctx.createImageData(App.canvas.width, App.canvas.height);
-	
+
 	const img = new Image();
+	// const img = document.getElementById('doom_image');
 	img.src= "doom.png";
 	img.onload = ()=>{
 
@@ -180,7 +181,7 @@ function loop(timestamp) {
 			App.buffer32[index] = palette[palette_index];
 			pixels_updated++;
 			index++;
-		}		 
+		}
 	}
 
     for (let y = 1; y < App.canvas.height; y++) {
