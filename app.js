@@ -19,7 +19,8 @@ const App = {
 	fire_palette_ratio: 2,
 	timer: 0,
 	frame_count: 0,
-	frame_per_seconds: 0
+	frame_per_seconds: 0,
+	fps: null
 };
 
 const palette = [
@@ -42,6 +43,8 @@ function init() {
 
 	App.canvas = document.getElementById('display');
 	App.canvas_ctx = App.canvas.getContext('2d', {alpha: false});
+
+	App.fps = document.getElementById('fps');
 
 	update_size();
 
@@ -143,7 +146,7 @@ function loop(timestamp) {
 		App.timer = time;
 		App.frame_count = 0;
 	}
-	document.title = `Doom fire | FPS ${App.frame_per_seconds}`;
+	App.fps.innerHTML = `FPS: ${App.frame_per_seconds}`;
 
 	App.frame_count++;
 
