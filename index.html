@@ -2,26 +2,22 @@
 <html>
 	<head>
 		<meta charset="utf-8">
-		<title></title>
+		<title>Doom fire | FPS</title>
 		<style>
 			body {
-				margin: 2px;
+				overflow: hidden;
 				padding: 0;
-				background-color: grey;
+				margin: 0;
+				height: 100vh;
 			}
 			canvas {
-				margin: 0;
-				padding: 0;
-				border: 0px solid grey;
+				width: 100vw;
+				height: 100vh;
 			}
-			img { display: none }
 		</style>
 	</head>
 	<body>
-		<canvas id="Canvas" width="800" height="400"></canvas>
-		<!-- <img src="doom.png" id="doom_image"> -->
-		<br>
-		<button id="Fire_Button">Stop</button>
+		<canvas id="display"></canvas>
 		<script src="app.js"></script>
 	</body>
 </html>
