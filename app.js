@@ -1,7 +1,6 @@
 "use strict";
 
-window.onload = ()=>{ init(); };
-window.onresize = update_size;
+window.addEventListener('resize', update_size);
 
 const App = {
 	canvas: null,
@@ -36,6 +35,8 @@ const palette = [
 	0xFFC7EFEF,	0xFFFFFFFF
 ];
 
+init();
+
 function init() {
 
 	App.offscreen = document.createElement('canvas');
@@ -43,6 +44,7 @@ function init() {
 
 	App.canvas = document.getElementById('display');
 	App.canvas_ctx = App.canvas.getContext('2d', {alpha: false});
+	App.canvas_ctx.imageSmoothingEnabled = false;
 
 	App.fps = document.getElementById('fps');
 
@@ -55,6 +57,7 @@ function update_size(evt) {
 
 	App.canvas.width = window.innerWidth;
 	App.canvas.height = window.innerHeight;
+	App.canvas_ctx.imageSmoothingEnabled = false;
 
 	App.offscreen.width = Math.ceil(App.canvas.width / App.scale);
 	App.offscreen.height = Math.ceil(App.canvas.height / App.scale);
@@ -90,31 +93,7 @@ function loop(timestamp) {
 		}
 	}
 
-	// stop fire
-	if(App.fire_is_stopping === true) {
-		let index = (App.offscreen.height - 7) * App.offscreen.width;
-		const count = App.offscreen.width * App.offscreen.height;
-		while(index < count) {
-			if(App.data[index] > 0) {
-				App.data[index] -= Math.round(Math.random()) & 3;
-			}
-			index++;
-		}
-	}
-
 	// update fire
-
-	// if starting or stopping update bottom row
-	if(App.fire_is_starting === true || App.fire_is_stopping === true) {
-		let index = App.offscreen.width * (App.offscreen.height - 2);
-		const count = App.offscreen.width * App.offscreen.height;
-		while(index < count) {
-			const palette_index = Math.floor(App.data[index] / App.fire_palette_ratio);
-			App.offscreen_buffer32[index] = palette[palette_index];
-			index++;
-		}
-	}
-
 	for (let y = 1; y < App.offscreen.height; y++) {
 		for (let x = 0; x < App.offscreen.width; x++) {
 
@@ -124,7 +103,7 @@ function loop(timestamp) {
 			const direction = Math.round(Math.random() * 2) - 1;
 			const dst_index = src_index - App.offscreen.width + direction;
 
-			const decay = (Math.random() * 3) & 1;
+			const decay = (Math.random() * 8) & 1;
 			const dst_value = App.data[src_index] - decay;
 			const palette_index = Math.floor(dst_value / App.fire_palette_ratio);
 
